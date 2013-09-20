@@ -198,12 +198,25 @@
 		}
 
 		protected function findRelatedValues(array $relation_id = array()) {
+			//Before we start check that we have a section id to avoid funny errors
+			$related_field_id = $this->get('related_field_id');
+			if (count($related_field_id) == 1 && empty($related_field_id[0])) {
+				//if there is no related section just return a list with just the ID's
+				$relation_data = array();
+				foreach ($relation_id as $key => $item) {
+					$relation_data[] = array(
+						'id' =>	$item
+					);
+				}
+				return $relation_data;
+			}
+
 			// 1. Get the field instances from the SBL's related_field_id's
 			// FieldManager->fetch doesn't take an array of ID's (unlike other managers)
 			// so instead we'll instead build a custom where to emulate the same result
 			// We also cache the result of this where to prevent subsequent calls to this
 			// field repeating the same query.
-			$where = ' AND id IN (' . implode(',', $this->get('related_field_id')) . ') ';
+			$where = ' AND id IN (' . implode(',', $related_field_id) . ') ';
 			$hash = md5($where);
 			if(!isset(self::$cache[$hash]['fields'])) {
 				$fields = FieldManager::fetch(null, null, 'ASC', 'sortorder', null, null, $where);
@@ -497,6 +510,7 @@
 			if(!is_array($data['relation_id'])) {
 				$data['relation_id'] = array($data['relation_id']);
 			}
+
 			$related_values = $this->findRelatedValues($data['relation_id']);
 
 			foreach($related_values as $relation) {
@@ -577,7 +591,7 @@
 				$result['relation_id'][] = (int)$data[$a];
 			}
 
-			return $result;
+			return $result['relation_id'];
 		}
 
 	/*-------------------------------------------------------------------------
