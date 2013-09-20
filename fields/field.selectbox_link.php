@@ -550,6 +550,7 @@
 				$label = '';
 				foreach($result as $item){
 					$label .= ', ' . $item['value'];
+					if (empty($item['value'])) $label .= $item['id'];
 				}
 				$link->setValue(General::sanitize(trim($label)));
 				return $link->generate();
